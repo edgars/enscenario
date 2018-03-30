@@ -1,0 +1,32 @@
+package ${table}dataservice.db;
+
+import ballerina.data.sql;
+import ballerina.time;
+
+sql:ClientConnector sqlConnection;
+
+public function initializeDatabase (string dbHost, string dbPort, string userName, string password, string dbName)
+(boolean) {
+// Convert dbPort string to integer value
+var dbPortNumber, _ = <int>dbPort;
+dbName = dbName + "?useSSL=false";
+
+// Initialize the global variable "sqlConnection" with MySQL database connection
+sqlConnection = create sql:ClientConnector(sql:DB.MYSQL, dbHost, dbPortNumber, dbName, userName, password,
+                                                                                                 {maximumPoolSize:5});
+                                                                                                 return true;
+                                                                                                 }
+
+public function retrieveAll${service} () (json) {
+    endpoint<sql:ClientConnector> ${table}DataBase {
+        sqlConnection;
+    }
+
+    // Prepare the sql string with employee data as parameters
+    string sqlString = "SELECT * FROM ${table}";
+    // Retrieve employee data by invoking call action defined in ballerina sql connector
+    var dataTable =  ${table}DataBase.call(sqlString, null, null);
+    // Convert the sql data table into JSON using type conversion
+    var jsonReturnValue, _ = <json>dataTable;
+    return jsonReturnValue;
+}

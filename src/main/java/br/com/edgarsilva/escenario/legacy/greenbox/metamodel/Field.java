@@ -1,6 +1,16 @@
 package br.com.edgarsilva.escenario.legacy.greenbox.metamodel;
 
 public class Field {
+    @Override
+    public String toString() {
+        return "Field{" +
+                "name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", precision='" + precision + '\'' +
+                ", javaType='" + javaType + '\'' +
+                '}';
+    }
+
     private String name;
     private String type;
     private String precision;
@@ -38,7 +48,5 @@ public class Field {
         this.javaType = javaType;
     }
 
-    public String toString() {
-        return getName() + "\t\t - \t\t" + getType() + "\t\t - \t\t" + getPrecision();
-    }
+
 }

@@ -1,0 +1,40 @@
+package ${table}dataservice;
+
+
+import ballerina.config;
+import ballerina.log;
+import ballerina.net.http;
+import ${table}dataservice.db as databaseUtil;
+
+
+service<http> records {
+
+    string dbHost = "${host}";
+    string dbPort = "${port}";
+    string userName ="${user}";
+    string password = "${pass}";
+    string dbName = "${database}";
+
+    boolean isInitialized = databaseUtil:initializeDatabase(dbHost, dbPort, userName, password, dbName);
+
+
+
+    @http:resourceConfig {
+        methods:["GET"],
+        path:"/${table}/"
+    }
+    resource retrieveTransactionsResource (http:Connection httpConnection, http:InRequest request) {
+
+        // Initialize an empty http response message
+        http:OutResponse response = {};
+
+        // Invoke retrieveById function to retrieve data from MySQL database
+        json ${table}Data = databaseUtil:retrieveAll${service}();
+
+        // Send the response back to the client with the employee data
+        response.setJsonPayload(${table}Data);
+        _ = httpConnection.respond(response);
+    }
+
+
+}

@@ -7,27 +7,34 @@ import org.beryx.textio.TextIoFactory;
 
 
 import java.io.Console;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
 
-        // create a scanner so we can read the command-line input
+        TextIO textIO = TextIoFactory.getTextIO();
+        TerminalProperties<?> props =  textIO.getTextTerminal().getProperties();
 
-        System.out.print("\n" +
-                " ___ ___ _______ ___  ___ _____(_)__ \n" +
-                "/ -_|_-</ __/ -_) _ \\/ _ `/ __/ / _ \\\n" +
-                "\\__/___/\\__/\\__/_//_/\\_,_/_/ /_/\\___/\n" +
-                "                                     "
+        props.setPromptColor("orange");
 
+        textIO.getTextTerminal().println("\n" +
+                "$$$$$$$$$$$$$$$$$$$$$$$$$\n" +
+                "$$$$$$$$$$$$$$$$$$$$$$$$$\n" +
+                "$$$$$'`$$$$$$$$$$$$$'`$$$\n" +
+                "$$$$$$  $$$$$$$$$$$  $$$$    Escenario is a Microservices Generator for your data!\n" +
+                "$$$$$$$  '$/ `/ `$' .$$$$    Powered by Ballerina + Docker\n" +
+                "$$$$$$$$. i  i  /! .$$$$$    version beta-0.1\n" +
+                "$$$$$$$$$.--'--'   $$$$$$\n" +
+                "$$^^$$$$$'        J$$$$$$\n" +
+                "$$$   ~\"\"   `.   .$$$$$$$\n" +
+                "$$$$$e,      ;  .$$$$$$$$\n" +
+                "$$$$$$$$$$$.'   $$$$$$$$$\n" +
+                "$$$$$$$$$$$$.    $$$$$$$$\n" +
+                "$$$$$$$$$$$$$     $byEAS$"
 
         );
 
-        System.out.println("\nEscenario is a MicroService data generator for Ballerina");
-
-        TextIO textIO = TextIoFactory.getTextIO();
-
-        TerminalProperties<?> props =  textIO.getTextTerminal().getProperties();
 
         props.setPromptBold(true);
         props.setPromptUnderline(true);
@@ -38,41 +45,63 @@ public class Main {
         props.setInputColor("blue");
         props.setInputItalic(true);
 
+
+        String outputFolder =  textIO.newStringInputReader().read("Please, where would you like to generate the Ballerina Services?");
+
+
         String database = textIO.newStringInputReader()
                 .withNumberedPossibleValues("mysql", "postgres", "h2")
                 .read("Please, which is you database engine?");
 
-        Scanner scanner = new Scanner(System.in);
+
+        String host =  textIO.newStringInputReader().read("Please, enter with the database Host");
+        //jdbc:mysql://localhost:3306/mybank_eascorp?useSSL=false
 
 
-        // prompt for their age
-        System.out.print("Database URL: ");
-        //jdbc:mysql://localhost:3306/mybank_eascorp
+        Integer port =  textIO.newIntInputReader() .withMinVal(1).read("Please, specify the database port");
 
-        // get the age as an int
-        String url = scanner.next();
+        String schema =  textIO.newStringInputReader().read("Please, enter with the database schema");
 
-        System.out.print("User : ");
+        String user =  textIO.newStringInputReader().read("Please, enter with the database USER");
 
-        String user = scanner.next();
+        String pass = textIO.newStringInputReader()
+                .withMinLength(3).withInputMasking(true)
+                .read("Please, enter with the Password");
 
-        System.out.print("Password: ");
-
-        String pass = getPasswordConsole();
 
         Generator gen  = new Generator();
         gen.setDatabaseEngine(database);
-        gen.setUrl(url);
+        gen.setHost(host);
+        gen.setPort(port);
+        gen.setSchema(schema);
         gen.setUser(user);
         gen.setPass(pass);
+        gen.setOutputFolder(outputFolder);
 
-       System.out.println("Tables found in that connection :  "+ url + ":  " + gen.getTables());
+        List<String> tables = gen.getTables();
 
-        System.out.print("Select which table you want to generate the Ballerina Service, or * for all tables : ");
+        tables.add("* - All Tables ");
 
-        String table = scanner.next();
+        String table = textIO.newStringInputReader()
+                .withNumberedPossibleValues(tables)
+                .read("Select one of the tables for create the microservice");
 
-        System.out.println("Fields : " + gen.getFields(table));
+        if (! table.startsWith("*")) {
+
+            gen.generateSourcesFromTable(table);
+
+        } else {
+
+            tables.remove(tables.size()-1);
+
+            for (String aTable:tables
+                 ) {
+
+                gen.generateSourcesFromTable(aTable);
+            }
+        }
+
+        textIO.getTextTerminal().println("Microservice generated ! go to folder " + outputFolder + " and check the commands!");
 
     }
 
